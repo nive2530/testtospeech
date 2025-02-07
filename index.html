@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        audio {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text to Speech</h1>
+        <textarea id="text-input" placeholder="Enter text here..."></textarea><br>
+        <br>
+        <button onclick="synthesizeSpeech()">Generate Speech</button>
+        <audio id="audio-player" controls style="display:none;"></audio>
+    </div>
+
+    <script>
+        async function synthesizeSpeech() {
+            const text = document.getElementById("text-input").value;
+            
+
+            if (text.trim() === "") {
+                alert("Please enter some text!");
+                return;
+            }
+
+            try {
+                // Send POST request to FastAPI backend
+                const response = await fetch("http://localhost:8000/synthesize", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error synthesizing speech: " + response.statusText);
+                }
+
+                // Get the audio file
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                // Show the audio player and play the sound
+                const audioPlayer = document.getElementById("audio-player");
+                audioPlayer.src = audioUrl;
+                audioPlayer.style.display = "block";
+                audioPlayer.play();
+            } catch (error) {
+                alert("An error occurred: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
